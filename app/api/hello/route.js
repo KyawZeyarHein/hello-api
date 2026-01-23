@@ -1,7 +1,16 @@
+import corsHeaders from "@/lib/cors";
 import { NextResponse } from "next/server";
 
-export async function GET() {
-  return NextResponse.json({
-    message: "hello world",
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders,
   });
+}
+
+export async function GET() {
+  return NextResponse.json(
+    { message: "hello world" },
+    { headers: corsHeaders }
+  );
 }
