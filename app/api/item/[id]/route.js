@@ -3,25 +3,16 @@ import { getClientPromise } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: corsHeaders,
-  });
-}
-
 export async function GET(req, { params }) {
-  const { id } = params;
-
   try {
     const client = await getClientPromise();
     const db = client.db("wad-01");
 
-    const result = await db
-      .collection("item")
-      .findOne({ _id: new ObjectId(id) });
+    const item = await db.collection("item").findOne({
+      _id: new ObjectId(params.id),
+    });
 
-    return NextResponse.json(result, {
+    return NextResponse.json(item, {
       headers: corsHeaders,
     });
   } catch (err) {
@@ -32,27 +23,18 @@ export async function GET(req, { params }) {
   }
 }
 
-export async function PATCH(req, { params }) {
-  const { id } = params;
-  const data = await req.json();
-  const update = {};
-
-  if (data.name) update.itemName = data.name;
-  if (data.category) update.itemCategory = data.category;
-  if (data.price) update.itemPrice = data.price;
-
+export async function DELETE(req, { params }) {
   try {
     const client = await getClientPromise();
     const db = client.db("wad-01");
 
-    await db.collection("item").updateOne(
-      { _id: new ObjectId(id) },
-      { $set: update }
-    );
+    await db.collection("item").deleteOne({
+      _id: new ObjectId(params.id),
+    });
 
     return NextResponse.json(
-      { message: "Updated" },
-      { status: 200, headers: corsHeaders }
+      { success: true },
+      { headers: corsHeaders }
     );
   } catch (err) {
     return NextResponse.json(
@@ -63,7 +45,6 @@ export async function PATCH(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-  const { id } = params;
   const data = await req.json();
 
   try {
@@ -71,13 +52,20 @@ export async function PUT(req, { params }) {
     const db = client.db("wad-01");
 
     await db.collection("item").updateOne(
-      { _id: new ObjectId(id) },
-      { $set: data }
+      { _id: new ObjectId(params.id) },
+      {
+        $set: {
+          itemName: data.name,
+          itemCategory: data.category,
+          itemPrice: data.price,
+          status: data.status,
+        },
+      }
     );
 
     return NextResponse.json(
-      { message: "Replaced" },
-      { status: 200, headers: corsHeaders }
+      { success: true },
+      { headers: corsHeaders }
     );
   } catch (err) {
     return NextResponse.json(
