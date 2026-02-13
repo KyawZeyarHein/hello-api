@@ -22,9 +22,9 @@ export async function GET(req, { params }) {
       .findOne({ _id: new ObjectId(id) });
 
     return NextResponse.json(result, { headers: corsHeaders });
-  } catch (err) {
+  } catch (error) {
     return NextResponse.json(
-      { message: err.toString() },
+      { message: error.toString() },
       { status: 400, headers: corsHeaders }
     );
   }
@@ -53,9 +53,9 @@ export async function PATCH(req, { params }) {
       { message: "Updated" },
       { status: 200, headers: corsHeaders }
     );
-  } catch (err) {
+  } catch (error) {
     return NextResponse.json(
-      { message: err.toString() },
+      { message: error.toString() },
       { status: 400, headers: corsHeaders }
     );
   }
@@ -76,9 +76,9 @@ export async function DELETE(req, { params }) {
       { message: "Deleted" },
       { status: 200, headers: corsHeaders }
     );
-  } catch (err) {
+  } catch (error) {
     return NextResponse.json(
-      { message: err.toString() },
+      { message: error.toString() },
       { status: 400, headers: corsHeaders }
     );
   }
