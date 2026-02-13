@@ -3,42 +3,57 @@ import { getClientPromise } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: corsHeaders
-  });
-}
+// =======================
+// GET ONE ITEM
+// =======================
+export async function GET(req, context) {
+  const { params } = context;
+  const id = params.id;
 
-export async function GET(req, { params }) {
-  const { id } = params;
+  const headers = {
+    "Cache-Control": "no-store",
+    ...corsHeaders
+  };
 
   try {
     const client = await getClientPromise();
     const db = client.db("wad-01");
 
-    const result = await db
-      .collection("item")
-      .findOne({ _id: new ObjectId(id) });
+    const item = await db.collection("item").findOne({
+      _id: new ObjectId(id)
+    });
 
-    return NextResponse.json(result, { headers: corsHeaders });
-  } catch (error) {
+    if (!item) {
+      return NextResponse.json(
+        { message: "Item not found" },
+        { status: 404, headers }
+      );
+    }
+
+    return NextResponse.json(item, { headers });
+
+  } catch (err) {
     return NextResponse.json(
-      { message: error.toString() },
-      { status: 400, headers: corsHeaders }
+      { message: err.toString() },
+      { status: 400, headers }
     );
   }
 }
 
-export async function PATCH(req, { params }) {
-  const { id } = params;
-  const data = await req.json();
+// =======================
+// UPDATE ITEM
+// =======================
+export async function PATCH(req, context) {
+  const { params } = context;
+  const id = params.id;
 
   try {
+    const data = await req.json();
+
     const client = await getClientPromise();
     const db = client.db("wad-01");
 
-    await db.collection("item").updateOne(
+    const result = await db.collection("item").updateOne(
       { _id: new ObjectId(id) },
       {
         $set: {
@@ -49,20 +64,32 @@ export async function PATCH(req, { params }) {
       }
     );
 
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { message: "Item not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
     return NextResponse.json(
-      { message: "Updated" },
-      { status: 200, headers: corsHeaders }
+      { message: "Updated successfully" },
+      { headers: corsHeaders }
     );
-  } catch (error) {
+
+  } catch (err) {
     return NextResponse.json(
-      { message: error.toString() },
+      { message: err.toString() },
       { status: 400, headers: corsHeaders }
     );
   }
 }
 
-export async function DELETE(req, { params }) {
-  const { id } = params;
+// =======================
+// DELETE ITEM
+// =======================
+export async function DELETE(req, context) {
+  const { params } = context;
+  const id = params.id;
 
   try {
     const client = await getClientPromise();
@@ -73,12 +100,13 @@ export async function DELETE(req, { params }) {
     });
 
     return NextResponse.json(
-      { message: "Deleted" },
-      { status: 200, headers: corsHeaders }
+      { message: "Deleted successfully" },
+      { headers: corsHeaders }
     );
-  } catch (error) {
+
+  } catch (err) {
     return NextResponse.json(
-      { message: error.toString() },
+      { message: err.toString() },
       { status: 400, headers: corsHeaders }
     );
   }
